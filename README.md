@@ -40,6 +40,16 @@ a no-op — the symlinks follow the checkout.
 A repo-local skill with the same name as one here wins for that repo —
 that is how a repo customises a shared default.
 
+## What belongs here
+
+Only skills **we author**. Anything installed and updated by a vendor —
+the Microsoft Azure skills pack, Context7's `find-docs`, the Hugging Face
+`hf` skill, `drunk-claude` — stays vendor-managed at user level and must
+not be copied or symlinked in here. Vendoring a third-party skill forks it
+and silently breaks its updater; a `git pull` here would then serve a
+stale copy to every machine. To adopt an upstream skill, pin it in
+`wslsetup` instead.
+
 ## Conventions
 
 - `SKILL.md` frontmatter: `name` (matches the directory) and `description`
