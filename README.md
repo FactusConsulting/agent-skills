@@ -17,7 +17,7 @@ skills/<name>/SKILL.md    # one skill per directory, SKILL.md is the entry point
 Clone once, symlink into the user-level skill directories each harness reads:
 
 ```bash
-git clone <this repo> ~/source/agent-skills
+git clone git@github.com:FactusConsulting/agent-skills.git ~/source/agent-skills
 mkdir -p ~/.agents/skills ~/.claude/skills
 for s in ~/source/agent-skills/skills/*/; do
   n=$(basename "$s")
