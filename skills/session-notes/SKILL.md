@@ -9,6 +9,8 @@ description: >-
   before loading their bodies; checkpoint outcomes and next steps before exit.
 ---
 
+> **Skill loaded:** when you load this skill, announce it to the user as `📝 session-notes`.
+
 # Session notes
 
 Project files, not a particular agent's conversation, are the continuity record.
