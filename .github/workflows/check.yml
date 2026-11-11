@@ -1,0 +1,34 @@
+name: check
+
+# `nix flake check` on every PR and on main: every skill's frontmatter, the
+# session-notes validator's tests, and the packages and Home Manager module for
+# every system. Consumers (devsetup) pull main, so main must always pass.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  flake:
+    name: nix flake check
+    runs-on: arc-runner
+    container:
+      image: public.ecr.aws/docker/library/ubuntu:26.04
+    # Root in an unprivileged container: no build users and no build sandbox,
+    # as devsetup's evaluation job.
+    env:
+      NIX_CONFIG: |
+        build-users-group =
+        sandbox = false
+        experimental-features = nix-command flakes
+    steps:
+      - name: Install Nix
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y git nix-bin ca-certificates
+      - uses: actions/checkout@v7
+      - name: Check the flake
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          nix flake check --all-systems
