@@ -14,20 +14,46 @@ skills/<name>/SKILL.md    # one skill per directory, SKILL.md is the entry point
 
 ## Installation
 
-Clone once, symlink into the user-level skill directories each harness reads:
+The repository is a Nix flake. Each skill is a package, `default` holds all of
+them, and a Home Manager module links them into the user-level skill
+directories:
+
+```nix
+# flake.nix
+inputs.agent-skills = {
+  url = "git+ssh://git@github.com/FactusConsulting/agent-skills";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
+
+# a Home Manager module
+imports = [ inputs.agent-skills.homeManagerModules.default ];
+programs.agent-skills.enable = true;
+# programs.agent-skills.skills = [ "session-notes" ];   # default: all
+```
+
+Each skill becomes a link `~/.agents/skills/<name>` (Pi, Codex, Copilot,
+Cursor) and `~/.claude/skills/<name>` (Claude Code) into the Nix store. Only
+the skills from here are linked; vendor-managed skills beside them are left
+alone. `devsetup` consumes the flake this way and moves its lock forward on
+its own schedule, so a merged change here reaches every machine on its next
+profile update.
+
+`nix flake check` validates every skill's frontmatter and runs the
+session-notes validator's tests. `nix build .#<skill>` builds one skill.
+
+To try an unmerged change on a machine before it lands, build the consumer
+against the checkout: `--override-input agent-skills path:$HOME/source/agent-skills`.
+
+Without Nix (Windows), symlink the checkout instead:
 
 ```bash
-git clone git@github.com:FactusConsulting/agent-skills.git ~/source/agent-skills
 mkdir -p ~/.agents/skills ~/.claude/skills
 for s in ~/source/agent-skills/skills/*/; do
   n=$(basename "$s")
-  ln -sfn "$s" ~/.agents/skills/"$n"   # Copilot / Codex / Cursor
-  ln -sfn "$s" ~/.claude/skills/"$n"   # Claude Code
+  ln -sfn "$s" ~/.agents/skills/"$n"
+  ln -sfn "$s" ~/.claude/skills/"$n"
 done
 ```
-
-`wslsetup` runs this on a new workstation. Re-running after a `git pull` is
-a no-op — the symlinks follow the checkout.
 
 ## Which tier a skill belongs to
 
