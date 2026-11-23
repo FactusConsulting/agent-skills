@@ -12,6 +12,17 @@ are installed **at user level**, not vendored into individual repos.
 skills/<name>/SKILL.md    # one skill per directory, SKILL.md is the entry point
 ```
 
+## Available skills
+
+| Skill | Purpose |
+| --- | --- |
+| `asd-std100` | Clear, unambiguous technical Danish inspired by ASD-STE100; not an official Danish standard. |
+| `d2-diagrams` | Create, validate, and render D2 diagrams. |
+| `grill-me` | Stress-test a plan or design through detailed questions. |
+| `mermaid-diagrams` | Create, edit, and validate Mermaid diagrams. |
+| `session-notes` | Keep durable project notes and handoffs across sessions. |
+| `technical-writing` | Ask Danish or English before technical writing, then load the corresponding skill. |
+
 ## Installation
 
 The repository is a Nix flake. Each skill is a package, `default` holds all of
@@ -37,6 +48,12 @@ the skills from here are linked; vendor-managed skills beside them are left
 alone. `devsetup` consumes the flake this way and moves its lock forward on
 its own schedule, so a merged change here reaches every machine on its next
 profile update.
+
+Technical writing starts with `technical-writing`, which asks for Danish or
+English unless the user already chose for the task. Danish uses `asd-std100`;
+English uses Devsetup's separately installed `asd-ste100`. Both writing skills
+include the language gate for direct use. Skill instructions are not runtime
+hooks: an agent must load and follow them.
 
 `nix flake check` validates every skill's frontmatter and runs the
 session-notes validator's tests. `nix build .#<skill>` builds one skill.
