@@ -19,6 +19,7 @@ skills/<name>/SKILL.md    # one skill per directory, SKILL.md is the entry point
 | `asd-std100` | Clear, unambiguous technical Danish inspired by ASD-STE100; not an official Danish standard. |
 | `d2-diagrams` | Create, validate, and render D2 diagrams. |
 | `grill-me` | Stress-test a plan or design through detailed questions. |
+| `legal-rag` | Build and measure retrieval (RAG) over legal text: extraction, chunking, embedding, retrieval, validity and citations. |
 | `mermaid-diagrams` | Create, edit, and validate Mermaid diagrams. |
 | `session-notes` | Keep durable project notes and handoffs across sessions. |
 
