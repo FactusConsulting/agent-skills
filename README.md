@@ -48,10 +48,11 @@ alone. `devsetup` consumes the flake this way and moves its lock forward on
 its own schedule, so a merged change here reaches every machine on its next
 profile update.
 
-Technical writing uses `asd-std100` for Danish or Devsetup's separately
-installed `asd-ste100` for English. Both skills ask for Danish or English
-unless the user already chose for the task, then load the other skill if
-needed. Skill instructions are not runtime hooks: an agent must load and
+Technical writing uses `asd-std100` for Danish or `asd-ste100` for English.
+`asd-ste100` is third-party (danyuchn/asd-ste100-skill), so devsetup pins and
+installs it beside these skills rather than copying it here. Both skills ask
+for Danish or English unless the user already chose for the task, then load
+the other skill if needed. Skill instructions are not runtime hooks: an agent must load and
 follow them.
 
 `nix flake check` validates every skill's frontmatter and runs the
