@@ -12,23 +12,17 @@ on:
 jobs:
   flake:
     name: nix flake check
-    runs-on: arc-runner
-    container:
-      image: public.ecr.aws/docker/library/ubuntu:26.04
-    # Root in an unprivileged container: no build users and no build sandbox,
-    # as devsetup's evaluation job.
-    env:
-      NIX_CONFIG: |
-        build-users-group =
-        sandbox = false
-        experimental-features = nix-command flakes
+    # The repository is public, and the Default runner group (arc-runner) refuses
+    # public repositories; arc-runner-public is the set the 'public-repos' group
+    # runs, and that group lists the repositories it serves. No Docker there, so
+    # no job container: Nix is installed on the runner, as in token-usage.
+    runs-on: arc-runner-public
     steps:
-      - name: Install Nix
-        run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y git nix-bin ca-certificates
+      - name: Install xz
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends xz-utils
+      # Pinned to a commit SHA: a mutable tag on a third-party action can be
+      # repointed at arbitrary code after review.
+      - uses: cachix/install-nix-action@382a9ed9481c7c1f94f68b72ef105b3417c73877 # v32.1.0
       - uses: actions/checkout@v7
       - name: Check the flake
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          nix flake check --all-systems
+        run: nix flake check --all-systems
