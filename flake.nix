@@ -111,7 +111,8 @@
         pkgs:
         {
           # Every skill has SKILL.md with frontmatter whose name is its directory and
-          # with a description, which is what harnesses match on.
+          # with a description, which is what harnesses match on, and announces itself
+          # with an emoji of its own (README.md, Conventions).
           frontmatter =
             pkgs.runCommandLocal "agent-skills-frontmatter"
               {
@@ -119,8 +120,9 @@
               }
               ''
                 python3 - ${self.packages.${pkgs.stdenv.hostPlatform.system}.default}/share/agent-skills <<'EOF'
-                import pathlib, sys, yaml
+                import pathlib, re, sys, yaml
                 bad = []
+                emojis = {}
                 for d in sorted(pathlib.Path(sys.argv[1]).iterdir()):
                     f = d / "SKILL.md"
                     if not f.is_file():
@@ -133,7 +135,14 @@
                         bad.append(f"{d.name}: frontmatter name is {meta.get('name')!r}")
                     if not str(meta.get("description") or "").strip():
                         bad.append(f"{d.name}: no description")
-                print("\n".join(bad) or "all skills have valid frontmatter")
+                    m = re.search(r"^> \*\*Skill loaded:\*\* when you load this skill, announce it to the user as `(\S+) " + re.escape(d.name) + "`\\.$", parts[2], re.M)
+                    if not m:
+                        bad.append(f"{d.name}: no 'Skill loaded' announcement")
+                    elif m.group(1) in emojis:
+                        bad.append(f"{d.name}: emoji {m.group(1)} is also {emojis[m.group(1)]}'s")
+                    else:
+                        emojis[m.group(1)] = d.name
+                print("\n".join(bad) or "all skills have valid frontmatter and an announcement")
                 sys.exit(1 if bad else 0)
                 EOF
                 touch $out

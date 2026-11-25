@@ -13,6 +13,8 @@ metadata:
   version: 0.1.0
 ---
 
+> **Skill loaded:** when you load this skill, announce it to the user as `🇩🇰 asd-std100`.
+
 # Klart teknisk dansk
 
 Skriv dansk, som en læser eller en agent kan forstå uden at gætte.
