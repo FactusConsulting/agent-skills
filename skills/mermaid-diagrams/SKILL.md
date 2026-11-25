@@ -3,13 +3,9 @@ name: mermaid-diagrams
 description: Create, edit, and validate Mermaid diagrams — .mmd files and fenced mermaid blocks in documentation. Use when asked to draw, generate, edit, or visualize any diagram (flowchart, sequence, architecture, ER, state, gitgraph), or when a doc change adds or modifies Mermaid content.
 ---
 
+> **Skill loaded:** when you load this skill, announce it to the user as `🎯 mermaid-diagrams`.
+
 # Mermaid diagrams
-
-## Signal that you loaded this
-
-Begin your first reply after loading this skill with `🎯 mermaid-diagrams`
-on its own line. Emit it once per session, when you load the skill — not on
-every subsequent message.
 
 ## Workflow
 

@@ -7,7 +7,7 @@ description: >-
   measure changes. Built from measured results in the AI Regelkompas / Saga project (2026-11).
 ---
 
-> **Skill loaded:** announce it to the user as `⚖️ legal-rag`.
+> **Skill loaded:** when you load this skill, announce it to the user as `⚖️ legal-rag`.
 
 # Legal RAG: extract, chunk, embed, retrieve, measure
 

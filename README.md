@@ -98,6 +98,10 @@ stale copy to every machine. To adopt an upstream skill, pin it in
 
 - `SKILL.md` frontmatter: `name` (matches the directory) and `description`
   (says *when* to use it — harnesses match on this).
+- Directly below the frontmatter, the announcement line, with an emoji no
+  other skill uses (`nix flake check` enforces both):
+  ``> **Skill loaded:** when you load this skill, announce it to the user as `<emoji> <name>`.``
+  It makes a loaded skill visible in the conversation.
 - Keep skills short; link to docs rather than restating them.
 - A skill that mandates itself from an `AGENTS.md` says so there — this repo
   cannot mandate anything in other repos.
