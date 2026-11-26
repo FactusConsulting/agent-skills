@@ -68,6 +68,11 @@ validity filter inside every arm.
 8. **Known weakness (open):** short tail chunks (a 334-character end of AI Act art. 2) get inflated reranker scores
    and outrank whole articles. Merge tails into their unit or set a minimum size **(hypothesis, untested)**.
    Parent/child small-to-big was worse **(negative)**.
+9. **Annex points, letters and stk. need their own addressable units.** The AI Act's Annex III is only two chunks,
+   so a question about point 4(a) can at best get "the right half of the annex". On 312 Commission Service Desk
+   classification cases the Annex III point was served in 53 %, Art. 6(3) in 22 % and Annex I in 0 of 19
+   (English questions against a Danish corpus, so language and chunking are mixed in these numbers).
+   **(hypothesis: sub-units fix it, untested)**
 
 ## 3. Embedding and query construction
 
@@ -90,10 +95,21 @@ validity filter inside every arm.
    a `plainto_tsquery` keyword arm is empty for most natural questions and adds nothing **(negative)**.
 2. **Serve 10 sources** (grade-2 recall 0.72 → 0.88, answers cite a governing source more often).
 3. **Reranker:** a weak reranker after a strong embedder hurts (0.6B: −0.026 nDCG@6). The 4B reranker helps the
-   user question (+0.030) but hurt fixed topic texts (−0.106), so topic retrievals skip it. Self-convert and
-   validate GGUFs against the transformers reference; never score a silent fallback.
-4. **Floors and gates are model-specific; recalibrate on every model/corpus change** with the empty-band method
+   user question (+0.030) but hurt fixed topic texts (−0.106), so topic retrievals skip it. Removing it costs short
+   questions a lot (b-short −0.165, template lookups −0.111). Questions compacted for length skip it anyway, so it
+   cannot cause or fix gaps on long texts. Self-convert and validate GGUFs against the transformers reference;
+   never score a silent fallback.
+4. **Pair guard:** count each (question, chunk) pair with the reranker's own tokenizer before the call and leave out
+   only a pair over the server's real limit (placed after the scored items, no score, counted). One oversized pair
+   otherwise fails the whole call with HTTP 400 and degrades the turn to RRF order (12/12 long questions degraded →
+   0/12, frozen sets unchanged).
+5. **A second eval endpoint must be proven score-identical** (same GGUF sha, build, flags, GPU model and driver;
+   max |Δscore| 0.0, identical rankings on 4,200 pairs) before it carries eval traffic, and never mix endpoints
+   inside one paired comparison.
+6. **Floors and gates are model-specific; recalibrate on every model/corpus change** with the empty-band method
    (geometric middle between strongest negative and weakest positive), and report how few negatives you had.
+7. **Follow explicit cross-references and supply definitions** ("jf. art. 6, stk. 2" → Annex III; Art. 3
+   definitions as context). The skill has no measured method yet **(hypothesis)**.
 
 ## 5. Validity, versions and citations
 
@@ -102,7 +118,12 @@ validity filter inside every arm.
 2. **Unknown metadata excludes nothing;** leave unverifiable fields absent. Closed schema (sourceType, status,
    territory, inForceFrom/To, supersedes, replacedBy, omitAnnexes, …).
 3. **Drafts and proposals are never a basis:** for anything that feeds an assessment use a filter that admits only
-   current *adopted* texts. With a looser filter the bots cited draft guidelines 14× and proposals 16× in 111 answers.
+   current *adopted* texts. With a looser filter the bots cited draft guidelines 14× and proposals 16× in 111 answers;
+   drafts/proposals were served in 192 of 456 turns. The adopted-only filter removed all of them and raised nDCG@6
+   0.713 → 0.747 (long questions 0.633 → 0.709, p < 0.001) with no set worse. It only works on documents that carry
+   the marker: audit unmarked documents (25 of 192 had no status) before you rely on it. It also removes proposals
+   as a source for "what does the proposal say?" questions; serve those as a labelled signal pool, never as a basis.
+   Final guidance can still outrank the act itself (AI Act Art. 5 lost to final prohibited-practice guidance).
 4. **Compare every rebuilt index with the seed list,** not with the gold set (gold built on the index found 0 gaps
    while 48 sources were missing). Sources without an audit go in labelled `unverified`; missing proof is never pass.
 5. **Verbatim citation check:** normalise (NFKC, invisibles, amendment markers, table `|`, quote marks, dashes,
@@ -114,8 +135,10 @@ validity filter inside every arm.
 1. **Measure the route the product actually calls**, with its real query construction, at provision level as well as
    document level (document 88.8 % vs provision 51.4 % on the same run).
 2. **Facit = pooled, panel-graded (0/1/2), frozen by hash before scoring.** A citation/catalogue facit alone is
-   invalid (75–90 % of its "misses" were relevant). Calibrate each panel model on controls (≥ 95 %), label new
-   chunks under the frozen protocol before scoring, unrated is never 0.
+   invalid (75–90 % of its "misses" were relevant). Rescored against the graded facit, the 52 catalogue misses of
+   the 51.4 % run were 30 questionable targets, 15 other grade-2 provisions of the same act, 7 real misses (act
+   absent, guidance or a draft served), 0 with no grade-2 source. Calibrate each panel model on controls (≥ 95 %),
+   label new chunks under the frozen protocol before scoring, unrated is never 0.
 3. **Metrics:** nDCG@6 (linear gain = mean grade), grade-2 recall, any grade-2; paired per question (sign-flip
    permutation 10,000, exact McNemar), p < 0.05.
 4. **Preregister cells, adoption rule and veto before running.** Keep guard sets for secondary routes (the topic
@@ -126,9 +149,12 @@ validity filter inside every arm.
    models), fingerprint the corpus, read production only through a read-only replica snapshot, hard-fail on memo
    misses and block outbound sockets in offline replays. Measure the noise floor before you trust a difference.
 
-## 7. Where this project still falls short (2026-11-25)
+## 7. Where this project still falls short (2026-11-26)
 
-Rule card → provision R@10 is 51 % (target 95 %), review-text retrieval (K7-M1) 27 % (target 90 %). The misses are
-provision precision inside the right document and drafts/guidance crowding out acts, not embedding quality. Next
-candidates: strict structure-aware units per article/stk. (E2), exact identifiers next to dense search (E3), a hard
-draft filter on the answer bots (E1), per-rule queries (E4). Treat them as hypotheses until measured.
+Retrieval quality measured against the graded facit is good for short questions (any grade-2 served 0.95–1.00 per
+set) and weaker for long texts (review texts nDCG@6 0.57). The real gaps are drafts/guidance crowding out the act
+(adopted-only filter), long questions (short per-fact queries, under test), sub-units in annexes and lists, and
+cross-references. Retrieval metrics are not answer quality: build a question-and-answer test set with reference
+answers from official sources (Commission, Datatilsynet, EDPB, national authorities, decisions), variants with one
+required fact removed, and out-of-scope items, and score answers mechanically (outcome class, governing provision
+cited, verbatim quotes, no draft as basis, unknown never "no").
