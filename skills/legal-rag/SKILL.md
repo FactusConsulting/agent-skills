@@ -129,6 +129,18 @@ validity filter inside every arm.
 5. **Verbatim citation check:** normalise (NFKC, invisibles, amendment markers, table `|`, quote marks, dashes,
    line-break hyphens, case, whitespace), then demand exact wording, in order, from the provision that contains it;
    never accept paraphrase or an added full stop. Verified citations 35 % → 85 %.
+6. **Enforce verbatim quotes mechanically, not by prompt.** A prompt rule ("quote only verbatim text") moved
+   verified quotes 25.0 % → 31.6 % (p = 0.114, not adopted). A gateway guard that removes quotation marks around
+   text not found verbatim in a served source (same normalisation as the check; keeps the text, adds nothing) gave
+   100 % verified among remaining quotes with no gate worse. Models translate source quotes in other-language
+   answers (4 of 113 English-answer quotes were verbatim) and also present translations as Markdown blockquotes,
+   so cover blockquotes too.
+7. **Answer language:** a prompt instruction alone is weak (English answers in English 86.6 % → 92.0 %, p = 0.105)
+   and the language varies between runs of the same question. Fixed refusal texts in one language also break it.
+   Detect the question language in code and state it explicitly at the end of the prompt **(hypothesis, under test)**.
+8. **Remove proposal content from system prompts.** A prompt that described a pending proposal made the bot restate
+   that content without a source; removing it made the model invent facts. Name proposals as proposals, forbid
+   describing their content, and answer only from excerpts (10/10 probes passed).
 
 ## 6. Measuring a change (do this every time)
 
@@ -145,9 +157,20 @@ validity filter inside every arm.
    guard caught a regression the overall number hid). Run a combination cell; effects do not add.
 5. **Answer-level check before rollout** with the production generator: grade-2 cited, citation precision, claims
    without coverage, blind pairwise judgement as a secondary signal only. An LLM judge is never the target metric.
+   Expect noise: at temperature 0 on another host with the same model, outcomes matched 29/30 but citation sets
+   only 7/30 and wording 1/30.
 6. **Determinism:** memoise helper-model outputs, embeddings and reranker answers per exact input (never across
    models), fingerprint the corpus, read production only through a read-only replica snapshot, hard-fail on memo
    misses and block outbound sockets in offline replays. Measure the noise floor before you trust a difference.
+7. **Question-and-answer test set, tiered by reference quality.** Gate only on a gold tier (core questions with an
+   official answer from an adopted source: FAQ, guidance example, decision). Report separately: official answers
+   from drafts, outcome-class items (out of scope, not in corpus, proposals), panel-written references, and
+   generated items (missing-fact variants, translations). On one set the gold tier was 285 of 667 items. Generated
+   variants are weak labels (one writer, small review), so report them per protocol version.
+8. **Clarification mode needs its own measure in both directions:** "asks for the removed fact" on missing-fact
+   variants and "unnecessary clarification" on full-context gold items. A structured clarification mode cut false
+   answers out of scope (28 → 12 of 46) and unknown-to-"no" (14 → 7 of 93), but asked for the missing fact in only
+   9 of 93 variants and, on gold, lowered correct outcome 95.5 % → 83.2 %. Keep it off until both directions pass.
 
 ## 7. Where this project still falls short (2026-11-26)
 
