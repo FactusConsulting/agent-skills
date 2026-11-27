@@ -113,6 +113,15 @@ Main points:
     - Status: adopted (saga#191, #196).
     - Caveat: the judge is one session model scored against a panel-built reference; claim coverage moved 0.763 → 0.786 (n.s.).
 
+**Before calling an uncited provision a retrieval failure, check the raw heading, the served
+source, and the evaluator's locator key.** Saga's QA catalogue mapped the unnumbered `BILAG` in
+Implementing Regulation (EU) 2024/2690 to `annex-I`. The runner did not record that key. Of the
+three affected dev questions, one lacked the annex, one received but did not cite it, and one cited
+it but scored as a miss. After matching source identity and evidence text, a verifier-only
+rescore moved governing citation from 47/78 to 48/78 on that `gold` sample. No answer changed.
+Keep the original output and score. Bind the amended verifier to both before rescoring.
+Saga evidence: `tests/eval/qa/run_qa.py`, `test_score_qa.py`, and `cr-c-dev-v2` in the QA archive.
+
 ## E. LLM judges
 
 18. **Never use an LLM judge (or Ragas) as the target metric; use mechanical metrics against a frozen facit, plus a jurist where needed.**
