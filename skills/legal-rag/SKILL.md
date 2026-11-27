@@ -135,9 +135,13 @@ validity filter inside every arm.
    100 % verified among remaining quotes with no gate worse. Models translate source quotes in other-language
    answers (4 of 113 English-answer quotes were verbatim) and also present translations as Markdown blockquotes,
    so cover blockquotes too.
-7. **Answer language:** a prompt instruction alone is weak (English answers in English 86.6 % → 92.0 %, p = 0.105)
-   and the language varies between runs of the same question. Fixed refusal texts in one language also break it.
-   Detect the question language in code and state it explicitly at the end of the prompt **(hypothesis, under test)**.
+7. **Measure routing, answer language, and quotation checks separately.** On 237 paired Saga dev items, a
+   question-language detector matched all labels. The trailing language rule and fixed English texts did not
+   reliably change generated answer language: 102/114 → 103/114 among English pairs answered in both arms
+   (one-sided exact McNemar p = 0.50). Danish stayed at 113/113. The same candidate's mechanical blockquote guard
+   removed all non-verbatim blockquotes (27 → 0). Saga did not adopt the bundle. Test the guard separately.
+   An output-language check and one bounded regeneration are **untested hypotheses**. Do not translate source
+   quotations to satisfy a language check. See [Saga #230](https://github.com/FactusConsulting/saga/pull/230).
 8. **Remove proposal content from system prompts.** A prompt that described a pending proposal made the bot restate
    that content without a source; removing it made the model invent facts. Name proposals as proposals, forbid
    describing their content, and answer only from excerpts (10/10 probes passed).
